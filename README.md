@@ -34,3 +34,10 @@ bun run test
 bun run lint
 bun run build
 ```
+
+## Deploying to Vercel
+
+The production build uses Nitro's Vercel preset and writes the deployment output to `.vercel/output`.
+In Vercel Project Settings, use **Other** as the Framework Preset, set the Build Command to
+`npm run build`, and clear any custom Output Directory such as `dist`. Do not set an Output
+Directory for this server-rendered app; Vercel should use Nitro's generated output.
