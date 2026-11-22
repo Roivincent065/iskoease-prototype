@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react";
 import {
+  seedAccounts,
   seedAnnouncements,
   seedApplications,
   seedProfile,
@@ -9,12 +10,15 @@ import {
   type AppStatus,
   type Profile,
   type Scholarship,
+  type UserAccount,
 } from "./seed";
 
 export type Role = "student" | "admin" | null;
 
 export interface State {
   role: Role;
+  currentUserId: string | null;
+  accounts: UserAccount[];
   scholarships: Scholarship[];
   announcements: Announcement[];
   applications: Application[];
@@ -27,6 +31,8 @@ const KEY = "iskoease-v1";
 
 const initial: State = {
   role: null,
+  currentUserId: null,
+  accounts: seedAccounts,
   scholarships: seedScholarships,
   announcements: seedAnnouncements,
   applications: seedApplications,
@@ -44,7 +50,14 @@ function load() {
   hydrated = true;
   try {
     const raw = localStorage.getItem(KEY);
-    state = { ...initial, ...(raw ? JSON.parse(raw) : {}), loaded: true };
+    const parsed = raw ? (JSON.parse(raw) as Partial<State>) : {};
+    state = {
+      ...initial,
+      ...parsed,
+      accounts: parsed.accounts?.length ? parsed.accounts : seedAccounts,
+      profile: { ...seedProfile, ...(parsed.profile ?? {}) },
+      loaded: true,
+    };
   } catch {
     state = { ...initial, loaded: true };
   }
@@ -79,9 +92,98 @@ export function useStore<T>(selector: (s: State) => T): T {
 const uid = () => Math.random().toString(36).slice(2, 10);
 const today = () => new Date().toISOString().slice(0, 10);
 
+export const isNemsuEmail = (email: string) => email.trim().toLowerCase().endsWith("@nemsu.edu.ph");
+export const isValidStudentId = (id: string) => /^\d{2}-\d{5}$/.test(id.trim());
+
 export const actions = {
-  login: (role: Role) => set(() => ({ role })),
-  logout: () => set(() => ({ role: null })),
+  login: (role: Role) =>
+    set((s) => {
+      if (!role) return { role: null, currentUserId: null };
+      const demo = s.accounts.find((a) => a.role === role);
+      return {
+        role,
+        currentUserId: demo?.id ?? null,
+        profile: role === "student" && demo ? demo.profile : s.profile,
+      };
+    }),
+  loginWithCredentials: (email: string, password: string): { ok: true; role: "student" | "admin" } | { ok: false; error: string } => {
+    load();
+    const normalized = email.trim().toLowerCase();
+    const account = state.accounts.find((a) => a.email.toLowerCase() === normalized);
+    if (!account) {
+      return { ok: false, error: "No account found with that email address. Please sign up first." };
+    }
+    if (account.authProvider === "google" && !account.password) {
+      return { ok: false, error: "This account uses Google Sign-In. Please click 'Continue with Google'." };
+    }
+    if (account.password !== password) {
+      return { ok: false, error: "Incorrect password. Please try again." };
+    }
+    set(() => ({
+      role: account.role,
+      currentUserId: account.id,
+      profile: account.role === "student" ? account.profile : state.profile,
+    }));
+    return { ok: true, role: account.role };
+  },
+  loginWithGoogle: (
+    email: string,
+  ): { ok: true; isNew: false; role: "student" | "admin" } | { ok: true; isNew: true } | { ok: false; error: string } => {
+    load();
+    const normalized = email.trim().toLowerCase();
+    if (!isNemsuEmail(normalized)) {
+      return { ok: false, error: "Only NEMSU Google accounts ending in @nemsu.edu.ph are allowed." };
+    }
+    const existing = state.accounts.find((a) => a.email.toLowerCase() === normalized);
+    if (existing) {
+      set(() => ({
+        role: existing.role,
+        currentUserId: existing.id,
+        profile: existing.role === "student" ? existing.profile : state.profile,
+      }));
+      return { ok: true, isNew: false, role: existing.role };
+    }
+    return { ok: true, isNew: true };
+  },
+  registerStudent: (input: {
+    profile: Profile;
+    password?: string | undefined;
+    authProvider: "email" | "google";
+  }): { ok: true } | { ok: false; error: string } => {
+    load();
+    const normalized = input.profile.email.trim().toLowerCase();
+    if (!isNemsuEmail(normalized)) {
+      return { ok: false, error: "Only NEMSU student accounts ending in @nemsu.edu.ph can register." };
+    }
+    if (state.accounts.some((a) => a.email.toLowerCase() === normalized)) {
+      return { ok: false, error: "An account with this email already exists. Please sign in instead." };
+    }
+    const cleanProfile: Profile = {
+      ...input.profile,
+      email: input.profile.email.trim(),
+      name: input.profile.name.trim(),
+      studentId: input.profile.studentId.trim(),
+      school: input.profile.school.trim(),
+      course: input.profile.course.trim(),
+    };
+    const newAccount: UserAccount = {
+      id: "u-" + uid(),
+      email: cleanProfile.email,
+      password: input.password,
+      role: "student",
+      authProvider: input.authProvider,
+      acceptedTermsAt: new Date().toISOString(),
+      profile: cleanProfile,
+    };
+    set((s) => ({
+      accounts: [newAccount, ...s.accounts],
+      role: "student",
+      currentUserId: newAccount.id,
+      profile: cleanProfile,
+    }));
+    return { ok: true };
+  },
+  logout: () => set(() => ({ role: null, currentUserId: null })),
   toggleSaved: (id: string) =>
     set((s) => ({ saved: s.saved.includes(id) ? s.saved.filter((x) => x !== id) : [...s.saved, id] })),
   submitApplication: (a: Omit<Application, "id" | "status" | "submittedAt">) =>
@@ -103,7 +205,13 @@ export const actions = {
         : { announcements: [{ ...an, id: uid() }, ...s.announcements] },
     ),
   deleteAnnouncement: (id: string) => set((s) => ({ announcements: s.announcements.filter((x) => x.id !== id) })),
-  saveProfile: (profile: Profile) => set(() => ({ profile })),
+  saveProfile: (profile: Profile) =>
+    set((s) => ({
+      profile,
+      accounts: s.currentUserId
+        ? s.accounts.map((a) => (a.id === s.currentUserId ? { ...a, email: profile.email, profile } : a))
+        : s.accounts,
+    })),
   reset: () => set(() => ({ ...initial, loaded: true, role: state.role })),
 };
 

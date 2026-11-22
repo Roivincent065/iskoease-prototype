@@ -41,16 +41,63 @@ export interface Application {
 }
 
 export interface Profile {
+  studentId: string;
   name: string;
   email: string;
+  contactNumber: string;
   school: string;
   course: string;
   yearLevel: string;
+  gwa: string;
+  preferredCategories: Category[];
+  preferredLocation: string;
+  financialNeed: string;
+}
+
+export interface UserAccount {
+  id: string;
+  email: string;
+  password?: string | undefined;
+  role: "student" | "admin";
+  authProvider: "email" | "google";
+  acceptedTermsAt: string;
+  profile: Profile;
 }
 
 export const CATEGORIES: Category[] = ["Government", "Private Foundation", "University", "Local Government"];
 export const STATUSES: AppStatus[] = ["Submitted", "Under Review", "Approved", "Rejected"];
 export const YEAR_LEVELS = ["1st Year", "2nd Year", "3rd Year", "4th Year", "5th Year"];
+export const COURSES = [
+  "BS Computer Science",
+  "BS Information Technology",
+  "BS Civil Engineering",
+  "BS Electrical Engineering",
+  "BS Mechanical Engineering",
+  "BS Accountancy",
+  "BS Business Administration",
+  "BS Hospitality Management",
+  "BS Tourism Management",
+  "BS Agriculture",
+  "BS Forestry",
+  "BS Fisheries",
+  "BS Biology",
+  "BS Mathematics",
+  "BS Environmental Science",
+  "BS Psychology",
+  "Bachelor of Elementary Education",
+  "Bachelor of Secondary Education",
+  "AB Political Science",
+  "BA English Language",
+  "BS Criminology",
+  "Other",
+];
+export const PREFERRED_LOCATIONS = ["Any", "Nationwide", "Metro Manila", "Quezon City", "Cebu", "Davao"];
+export const FINANCIAL_NEED_OPTIONS = [
+  "Full Tuition + Stipend",
+  "Tuition Assistance",
+  "Living / Book Allowance",
+  "Merit-Based",
+];
 
 export const seedScholarships: Scholarship[] = [
   {
@@ -218,9 +265,48 @@ export const seedApplications: Application[] = [
 ];
 
 export const seedProfile: Profile = {
+  studentId: "24-12345",
   name: "Juan Dela Cruz",
-  email: "juan.delacruz@example.com",
-  school: "Sample State University",
+  email: "juan.delacruz@nemsu.edu.ph",
+  contactNumber: "0917-555-0142",
+  school: "North Eastern Mindanao State University",
   course: "BS Computer Science",
   yearLevel: "2nd Year",
+  gwa: "1.45",
+  preferredCategories: ["Government", "University"],
+  preferredLocation: "Nationwide",
+  financialNeed: "Full Tuition + Stipend",
 };
+
+export const seedAccounts: UserAccount[] = [
+  {
+    id: "u-student-demo",
+    email: "juan.delacruz@nemsu.edu.ph",
+    password: "password123",
+    role: "student",
+    authProvider: "email",
+    acceptedTermsAt: "2026-10-01T00:00:00.000Z",
+    profile: seedProfile,
+  },
+  {
+    id: "u-admin-demo",
+    email: "admin@iskoease.ph",
+    password: "admin123",
+    role: "admin",
+    authProvider: "email",
+    acceptedTermsAt: "2026-10-01T00:00:00.000Z",
+    profile: {
+      studentId: "ADMIN-001",
+      name: "Scholarship Office",
+      email: "admin@iskoease.ph",
+      contactNumber: "",
+      school: "ISKOEASE Administration",
+      course: "",
+      yearLevel: "1st Year",
+      gwa: "",
+      preferredCategories: [],
+      preferredLocation: "Nationwide",
+      financialNeed: "Merit-Based",
+    },
+  },
+];

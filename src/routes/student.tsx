@@ -18,5 +18,6 @@ const nav = [
 
 function StudentLayout() {
   const profile = useStore((s) => s.profile);
-  return <AppShell role="student" nav={nav} userLabel={profile.name} userSub="Student (Demo)" />;
+  const sub = profile.studentId ? `ID: ${profile.studentId}` : "Student";
+  return <AppShell role="student" nav={nav} userLabel={profile.name} userSub={sub} />;
 }

@@ -1,7 +1,8 @@
 import { Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type ComponentType } from "react";
-import { GraduationCap, LogOut, Menu, X } from "lucide-react";
+import { LogOut, Menu, X } from "lucide-react";
 import { actions, useStore, type Role } from "@/lib/store";
+import { ThemeToggle } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
 export interface NavItem {
@@ -14,9 +15,7 @@ export interface NavItem {
 export function Brand() {
   return (
     <div className="flex items-center gap-2.5">
-      <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground">
-        <GraduationCap className="h-5 w-5" />
-      </div>
+      <img src="/logo.png" alt="IskoEase logo" className="h-10 w-10 shrink-0 rounded-full object-contain" />
       <div className="leading-tight">
         <div className="text-base font-semibold tracking-tight text-foreground">ISKOEASE</div>
         <div className="text-xs text-muted-foreground">Scholarship Portal</div>
@@ -70,9 +69,12 @@ export function AppShell({ role, nav, userLabel, userSub }: { role: Exclude<Role
           Logout
         </button>
       </nav>
-      <div className="border-t border-sidebar-border px-5 py-4">
-        <div className="text-sm font-medium text-foreground">{userLabel}</div>
-        <div className="text-xs text-muted-foreground">{userSub}</div>
+      <div className="space-y-2 border-t border-sidebar-border px-3 py-3">
+        <ThemeToggle showLabel />
+        <div className="px-2 py-1">
+          <div className="text-sm font-medium text-foreground">{userLabel}</div>
+          <div className="text-xs text-muted-foreground">{userSub}</div>
+        </div>
       </div>
     </div>
   );
@@ -94,6 +96,7 @@ export function AppShell({ role, nav, userLabel, userSub }: { role: Exclude<Role
           <Menu className="h-5 w-5" />
         </button>
         <Brand />
+        <ThemeToggle className="ml-auto" />
       </header>
       <main className="lg:pl-60">
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
