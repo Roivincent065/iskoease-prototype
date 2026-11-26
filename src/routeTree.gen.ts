@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as GoogleSigninRouteImport } from './routes/google-signin'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as StudentRouteImport } from './routes/student'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
@@ -33,6 +34,11 @@ const IndexRoute = IndexRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GoogleSigninRoute = GoogleSigninRouteImport.update({
+  id: '/google-signin',
+  path: '/google-signin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RegisterRoute = RegisterRouteImport.update({
@@ -104,6 +110,7 @@ const StudentScholarshipIdRoute = StudentScholarshipIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/google-signin': typeof GoogleSigninRoute
   '/register': typeof RegisterRoute
   '/student': typeof StudentRouteWithChildren
   '/admin/announcements': typeof AdminAnnouncementsRoute
@@ -120,6 +127,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/google-signin': typeof GoogleSigninRoute
   '/register': typeof RegisterRoute
   '/admin/announcements': typeof AdminAnnouncementsRoute
   '/admin/applications': typeof AdminApplicationsRoute
@@ -137,6 +145,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/google-signin': typeof GoogleSigninRoute
   '/register': typeof RegisterRoute
   '/student': typeof StudentRouteWithChildren
   '/admin/announcements': typeof AdminAnnouncementsRoute
@@ -156,6 +165,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/google-signin'
     | '/register'
     | '/student'
     | '/admin/announcements'
@@ -172,6 +182,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/google-signin'
     | '/register'
     | '/admin/announcements'
     | '/admin/applications'
@@ -188,6 +199,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/google-signin'
     | '/register'
     | '/student'
     | '/admin/announcements'
@@ -206,6 +218,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  GoogleSigninRoute: typeof GoogleSigninRoute
   RegisterRoute: typeof RegisterRoute
   StudentRoute: typeof StudentRouteWithChildren
 }
@@ -224,6 +237,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/google-signin': {
+      id: '/google-signin'
+      path: '/google-signin'
+      fullPath: '/google-signin'
+      preLoaderRoute: typeof GoogleSigninRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/register': {
@@ -362,6 +382,7 @@ const StudentRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  GoogleSigninRoute: GoogleSigninRoute,
   RegisterRoute: RegisterRoute,
   StudentRoute: StudentRouteWithChildren,
 }

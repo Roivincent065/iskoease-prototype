@@ -28,10 +28,7 @@ export function GoogleIcon() {
   );
 }
 
-const sampleGoogleAccounts = [
-  { name: "Maria Clara", email: "maria.clara@nemsu.edu.ph" },
-  { name: "Jose Rizal", email: "jose.rizal@nemsu.edu.ph" },
-];
+const sampleGoogleAccounts: { name: string; email: string }[] = [];
 
 export function GoogleAuthDialog({
   open,

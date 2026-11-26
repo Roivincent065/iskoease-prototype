@@ -78,7 +78,7 @@ function ApplyDialog({ s, open, onOpenChange }: { s: Scholarship; open: boolean;
   const [done, setDone] = useState(false);
   const up = (k: keyof typeof form) => (e: { target: { value: string } }) => setForm({ ...form, [k]: e.target.value });
 
-  const submit = (e: FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
     const err: Record<string, string> = {};
     if (!form.name.trim()) err["name"] = "Name is required.";
@@ -90,7 +90,7 @@ function ApplyDialog({ s, open, onOpenChange }: { s: Scholarship; open: boolean;
     s.documents.forEach((d) => { if (!files[d]) err[d] = "Attach this document."; });
     setErrors(err);
     if (Object.keys(err).length) return;
-    actions.submitApplication({ scholarshipId: s.id, scholarshipTitle: s.title, ...form, documents: s.documents.map((d) => `${d}: ${files[d]}`) });
+    await actions.submitApplication({ scholarshipId: s.id, scholarshipTitle: s.title, ...form, documents: s.documents.map((d) => `${d}: ${files[d]}`) });
     toast.success("Application submitted");
     setDone(true);
   };

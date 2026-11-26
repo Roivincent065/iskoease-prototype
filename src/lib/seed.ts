@@ -278,35 +278,4 @@ export const seedProfile: Profile = {
   financialNeed: "Full Tuition + Stipend",
 };
 
-export const seedAccounts: UserAccount[] = [
-  {
-    id: "u-student-demo",
-    email: "juan.delacruz@nemsu.edu.ph",
-    password: "password123",
-    role: "student",
-    authProvider: "email",
-    acceptedTermsAt: "2026-10-01T00:00:00.000Z",
-    profile: seedProfile,
-  },
-  {
-    id: "u-admin-demo",
-    email: "admin@iskoease.ph",
-    password: "admin123",
-    role: "admin",
-    authProvider: "email",
-    acceptedTermsAt: "2026-10-01T00:00:00.000Z",
-    profile: {
-      studentId: "ADMIN-001",
-      name: "Scholarship Office",
-      email: "admin@iskoease.ph",
-      contactNumber: "",
-      school: "ISKOEASE Administration",
-      course: "",
-      yearLevel: "1st Year",
-      gwa: "",
-      preferredCategories: [],
-      preferredLocation: "Nationwide",
-      financialNeed: "Merit-Based",
-    },
-  },
-];
+export const seedAccounts: UserAccount[] = [];

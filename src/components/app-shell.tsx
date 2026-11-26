@@ -34,8 +34,8 @@ export function AppShell({ role, nav, userLabel, userSub }: { role: Exclude<Role
     if (loaded && current !== role) navigate({ to: "/", replace: true });
   }, [loaded, current, role, navigate]);
 
-  const logout = () => {
-    actions.logout();
+  const logout = async () => {
+    await actions.logout();
     navigate({ to: "/", replace: true });
   };
 

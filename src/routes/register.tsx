@@ -3,7 +3,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { ArrowLeft, CheckCircle2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { FieldError, selectClass } from "@/components/common";
-import { GoogleAuthDialog, GoogleIcon } from "@/components/google-auth-dialog";
+import { GoogleIcon } from "@/components/google-auth-dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -81,7 +81,6 @@ function RegisterPage() {
   const [confirm, setConfirm] = useState("");
   const [agreedTerms, setAgreedTerms] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<RegErrorKey, string>>>({});
-  const [googleOpen, setGoogleOpen] = useState(false);
   const [legalModal, setLegalModal] = useState<"terms" | "privacy" | null>(null);
 
   useEffect(() => {
@@ -95,29 +94,6 @@ function RegisterPage() {
     }
   }, [search.provider, search.email, search.name]);
 
-  const handleGoogleSelect = (name: string, googleEmail: string) => {
-    const res = actions.loginWithGoogle(googleEmail);
-    if (!res.ok) {
-      toast.error(res.error);
-      return;
-    }
-    setGoogleOpen(false);
-    if (!res.isNew) {
-      toast.success(`Signed in with Google as ${googleEmail}`);
-      navigate({ to: res.role === "student" ? "/student" : "/admin" });
-      return;
-    }
-    setAuthProvider("google");
-    setProfile((prev) => ({
-      ...prev,
-      name: name.trim() || (googleEmail.split("@")[0] ?? "Student"),
-      email: googleEmail.trim(),
-    }));
-    setPassword("");
-    setConfirm("");
-    setErrors({});
-  };
-
   const toggleCategory = (cat: Category) => {
     const exists = profile.preferredCategories.includes(cat);
     const next = exists
@@ -126,7 +102,7 @@ function RegisterPage() {
     setProfile({ ...profile, preferredCategories: next });
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const err: Partial<Record<RegErrorKey, string>> = {};
 
@@ -157,7 +133,7 @@ function RegisterPage() {
     setErrors(err);
     if (Object.keys(err).length) return;
 
-    const res = actions.registerStudent({
+    const res = await actions.registerStudent({
       profile,
       ...(authProvider === "email" ? { password } : {}),
       authProvider,
@@ -231,7 +207,12 @@ function RegisterPage() {
                 <div className="text-sm font-semibold text-foreground">Register faster with your NEMSU Google account</div>
                 <div className="text-xs text-muted-foreground">Use your official @nemsu.edu.ph Google account to prefill your name and email.</div>
               </div>
-              <Button type="button" variant="outline" className="gap-2 shrink-0" onClick={() => setGoogleOpen(true)}>
+              <Button
+                type="button"
+                variant="outline"
+                className="gap-2 shrink-0"
+                onClick={() => navigate({ to: "/google-signin", search: { from: "register" } })}
+              >
                 <GoogleIcon />
                 Sign up with Google
               </Button>
@@ -493,8 +474,6 @@ function RegisterPage() {
           </section>
         </form>
       </main>
-
-      <GoogleAuthDialog open={googleOpen} onOpenChange={setGoogleOpen} onSelect={handleGoogleSelect} />
 
       <Dialog open={legalModal !== null} onOpenChange={(open) => !open && setLegalModal(null)}>
         <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-lg">

@@ -1,9 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
-import { ArrowRight, Bell, BookmarkCheck, Building2, GraduationCap, Sparkles } from "lucide-react";
+import { ArrowRight, Bell, BookmarkCheck, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { FieldError } from "@/components/common";
-import { GoogleAuthDialog, GoogleIcon } from "@/components/google-auth-dialog";
+import { GoogleIcon } from "@/components/google-auth-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -47,46 +47,21 @@ function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [googleOpen, setGoogleOpen] = useState(false);
 
-  const enterDemo = (role: "student" | "admin") => {
-    actions.login(role);
-    navigate({ to: role === "student" ? "/student" : "/admin" });
-  };
-
-  const handleLogin = (e: FormEvent) => {
+  const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
     if (!email.trim() || !password) {
       setError("Enter your email and password.");
       return;
     }
-    const res = actions.loginWithCredentials(email, password);
+    const res = await actions.loginWithCredentials(email, password);
     if (!res.ok) {
       setError(res.error);
       return;
     }
     toast.success("Signed in successfully");
     navigate({ to: res.role === "student" ? "/student" : "/admin" });
-  };
-
-  const handleGoogleSelect = (name: string, googleEmail: string) => {
-    const res = actions.loginWithGoogle(googleEmail);
-    if (!res.ok) {
-      toast.error(res.error);
-      return;
-    }
-    setGoogleOpen(false);
-    if (!res.isNew) {
-      toast.success(`Signed in with Google as ${googleEmail}`);
-      navigate({ to: res.role === "student" ? "/student" : "/admin" });
-      return;
-    }
-    toast.info("Complete your student registration form to finish setting up your NEMSU Google account.");
-    navigate({
-      to: "/register",
-      search: { provider: "google", email: googleEmail, name },
-    });
   };
 
   return (
@@ -199,7 +174,7 @@ function LoginPage() {
               type="button"
               variant="outline"
               className="w-full gap-2.5 py-5 font-medium"
-              onClick={() => setGoogleOpen(true)}
+              onClick={() => navigate({ to: "/google-signin", search: { from: "login" } })}
             >
               <GoogleIcon />
               Continue with Google
@@ -215,30 +190,8 @@ function LoginPage() {
               </Link>
             </div>
           </div>
-
-          <div className="mt-6">
-            <div className="mb-3 flex items-center gap-3 text-xs text-muted-foreground">
-              <div className="h-px flex-1 bg-border" />
-              quick demo access
-              <div className="h-px flex-1 bg-border" />
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Button type="button" variant="outline" onClick={() => enterDemo("student")}>
-                <GraduationCap className="h-4 w-4" /> Student Demo
-              </Button>
-              <Button type="button" variant="outline" onClick={() => enterDemo("admin")}>
-                <Building2 className="h-4 w-4" /> Admin Demo
-              </Button>
-            </div>
-            <p className="mt-2.5 text-center text-xs text-muted-foreground">
-              Demo login: <span className="font-medium text-foreground">juan.delacruz@nemsu.edu.ph</span> /{" "}
-              <span className="font-medium text-foreground">password123</span>
-            </p>
-          </div>
         </div>
       </div>
-
-      <GoogleAuthDialog open={googleOpen} onOpenChange={setGoogleOpen} onSelect={handleGoogleSelect} />
     </div>
   );
 }

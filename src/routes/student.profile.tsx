@@ -38,7 +38,7 @@ function ProfilePage() {
     setForm({ ...form, preferredCategories: next });
   };
 
-  const submit = (e: FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
     const err: typeof errors = {};
     textFields.forEach((f) => {
@@ -52,7 +52,7 @@ function ProfilePage() {
     if (!form.preferredCategories.length) err.preferredCategories = "Select at least one preferred category.";
     setErrors(err);
     if (Object.keys(err).length) return;
-    actions.saveProfile(form);
+    await actions.saveProfile(form);
     toast.success("Profile saved");
   };
 
